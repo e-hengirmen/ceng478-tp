@@ -6,50 +6,48 @@ For parallel matrix multiplication of 2 N$^2$ matrices A and B to create a N$^2$
 \end{enumerate}
 Even though in the end there will be exactly the same number of calculations the first 2 methods has an inefficient side opposed to the 3rd method. The problem with the first 2 methods comes from the way the matrix multiplication works. If we are using matrix row method then every process will only need that corresponding row from the A matrix but since the elements in a rows are in every column then every process will need all of the B matrix to process their rows. \\
 \\
-so every process would need to get N/P rows from matrix A and all of the B matrix which means to send the matrices we ould need to make 1 Broadcast operation and 1 scatter operation from process 0. Broadcast would take O($log(p)(t_s+$N$^2t_m$)) time (since it is the whole matrix the message size is N$^2$). On the other hand scatter operation would be done on rows and would take O($log(\sqrt{p})$(2t$_s$+$N^2\frac{1+\sqrt{p}}{\sqrt{p}}t_m$))) so in the end just sending the matrices would take O(N$^2$log(p)) operations(since log(p) is 2log($\sqrt{p}$))\\
+so every process(assume there are P number of processes) would need to get N/P rows from matrix A and all of the B matrix which means to send the matrices we ould need to make 1 Broadcast operation and 1 scatter operation from process 0. Broadcast would take O($log(p)(t_s+$N$^2t_m$)) time (since it is the whole matrix the message size is N$^2$). On the other hand scatter operation would be done on rows and would take O(\(log(p)t_s+(p-1)\frac{N^2}{p}t_m\)) time ($\frac{N^2}{p}$ is the message size every process recevives) so in the end just sending the matrices would take O(N$^2$log(p)) operations(because we need to broadcast the whole matrix)\\
 \\
-\textbf{Note:} Scatter would take O($log(\sqrt{p})$(2t$_s$+$N^2\frac{1+\sqrt{p}}{\sqrt{p}}t_m$))) because we are assuming that in a 2D mesh network the system would first scatters data between one row of processes which would take $log(\sqrt{p})$(t$_s$+$N^2t_m$) then we would need to scatter $\frac{N^2}{\sqrt{p}}$ between the columns which would take $log(\sqrt{p})$(t$_s$+$\frac{N^2}{\sqrt{p}}t_m$)\\
+On the other hand for the block approach we will only need to send rows from A matrix and columns from B matrix normally and since we chose cannon's algorihm we will only send \textbf{blocks} of $\frac{N}{\sqrt{p}}\times \frac{N}{\sqrt{p}}$ instead. Which would need 2 scatter operations of complexity O(\(log(p)t_s+(p-1)\frac{N^2}{p}t_m\))).
+so the complexity of initialization would be O(\(N^2\)) for this case.\\
 \\
-On the other hand for the block approach we will only need to send rows from A matrix and columns from B matrix normally and since we chose cannon's algorihm we will only send \textbf{blocks} of $\frac{N}{\sqrt{p}}\times \frac{N}{\sqrt{p}}$ instead. Which would need 2 scatter operations of complexity O($log(\sqrt{p})$(2t$_s$+$N^2\frac{1+\sqrt{p}}{\sqrt{p}}t_m$))).
-
-and we will send N$^2$/$\sqrt{p}$ entrys each time so the total complexity of sending messages would be \(2\sqrt{p}log(\sqrt{p})(t_s+\frac{N^2}{\sqrt{p}}t_m)\)
-
-
-For matrix multiplication, we can intuitively see that, to calculate an entry, we would first need to make N separate multiplications for every N$^2$ entry of the newly created matrix and then add them up. Let's say we have P amount of processes that we can use to solve this problem. To calculate an arbitrary c$_{xy}$, every process will have N/P different pairs that need to be multiplied(assuming P is less than M). However, after these have been calculated, we will have M values that the program needs to add up. Instead of adding them one by one and doing M-1 sequential operations, we can separate them into pairs, and this way decrease the time complexity of adding them. Normally calculating 1 entry would take M multiplications and M-1 additions, but with the parallel model, every process will first multiply them concurrently and then add them up in O(logM) time(assuming we have enough processes). So the complexity of calculating an entry will reduce from O(M) to O(log(M)). (we will use Reduce operation so it will actually cost log(P)(t$_s$+mt$_m$))\\
+\subsection{Cannon's Algorithm}
+The problem with Block based matrix multiplication is the fact that when we try to calculate an entry of the result matrix's value(for example c$_{ik}$) we tend to start from $a_{i0}$ and $b_{0k}$. Which means that every process would need to start with left-most A group and upper-most B group. (For example in the matrix below the Group 1 2 and 3 of C matrixes would need to start with Group1 of A.)
+\[ 
+\begin{bmatrix}
+Group1 & Group2 & Group3\\
+Group4 & Group5 & Group6\\
+Group7 & Group8 & Group9\\
+\end{bmatrix}
+\]
+Cannon's algorithm uses a way to bypass this problem. By their method instead of sending every group of block of matrix to their correspongind process we would instead rotate every block of A by its block row and every block of B by its block column according to their block row number and block column number. In this way at any given time, each process would be using a different block in every iteration(while keeping the computation accurate). For example assuming the above matrix is A it would become
+\[ 
+\begin{bmatrix}
+Group1 & Group2 & Group3\\
+Group5 & Group6 & Group4\\
+Group9 & Group7 & Group8\\
+\end{bmatrix}
+\]
+and if it was the B matrix it would become
+\[ 
+\begin{bmatrix}
+Group1 & Group5 & Group9\\
+Group4 & Group8 & Group3\\
+Group7 & Group2 & Group6\\
+\end{bmatrix}
+\]
+\textbf{Note:} We are not actually swapping the blocks then sending them. Instead we are sending corresponding A and B blocks to neccessary processes.\\
 \\
-\textbf{Note:} If we wanted to do this addition, we will first need to do n/2 operations without any pre-
-requirements and send the results to corresponding processes. For any remaining n/2 operations. We will wait for the required 2 signals from its required calculations to do the remaining ones. For example (1+2+3+4+5+6+7+8):\\
-Instead of doing 7 sequential additions (((((((1+2)+3)+4)+5)+6)+7)+8)\\
-We will instead make it in 3 operation groups. First, we will calculate 4 operations at the same time with 4 different processes:\\
+After Initial block sending from process 0 is done every program will need to calculate their given blocks. But to calculate C block of for example group 9 the program would need to make $\sqrt{p}$ block matrix multiplications (for Group9 it would calculate AGroup8*BGroup6+AGroup7*BGroup3+AGroup9*BGroup9). To do this every process will send its received blocks(A and B blocks) to the next process and receive 2 blocks from the previous one for $\sqrt{p}-1$ times($\sqrt{p}$ blocks in every row and column but since the first one was received from process 0 we only need to make $\sqrt{p}-1$ iterations.)\\
 \\
-p1-$>$ 1+2=3\\   
-p2-$>$ 3+4=7\\   
-p3-$>$ 5+6=11\\   
-p4-$>$ 7+8=15\\
+Sending these messages would take $t_s+\frac{N^2}{P}t_m$ for every iteration so in total sending and receiving messages to next and from previous partners would take $2(\sqrt{p}-1)(t_s+\frac{N^2}{P}t_m)$\\
 \\
-and send p3 and p4's solutions to p1 and p2 respectively(cost: (t$_s$+mt$_m$)))
-In the second step, we will do the same thing. But since we have 4 numbers, we will do it with 2 processes:\\
+And for every $\frac{N^2}{P}$ entry we would need to make N multiplications and N-1 additions so in total $\frac{2N^3-N^2}{P}$ operations would be done paralelly for every matrix and the time complexity of computations would become O($\frac{N^3}{P}$)\\
 \\
-p1-$>$ 3+7=10\\   
-p2-$>$ 11+15=26\\
+The last part is receiving these matrices. To do this the program would only need to make a gather operations to receive blocks from every process to one of the specified processes. And that would take O(\(log(p)t_s+(p-1)\frac{N^2}{p}t_m\))) time\\
 \\
-and send p2's result to p1(cost: (t$_s$+mt$_m$))).
-At the last step, we will add them up and find the result 36. And we had logP(t$_{calculation}$+t$_s$+mt$_m$)\\
+So in the end Cannon's Algorithm(Parallel) would make 3 scatter/gather operations(2 scatters for distributing A and B matrixes and 1 gather to gather calculated C matrix) in \(3log(p)t_s+3(p-1)\frac{N^2}{p}t_m\) time. Parallely sends blocks to each partner processes which takes $2(\sqrt{p}-1)(t_s+\frac{N^2}{P}t_m)$ time and calculates the C block of the matrix in $\frac{2N^3-N^2}{P}$ time which comes to \(\frac{2N^3-N^2}{P}+t_s(3log(p)+2\sqrt{p}-1)+t_m\frac{N^2}{P}(3p+2\sqrt{p}-4)\) or O(\(max(\frac{N^3}{P},N^2)\))\\
 \\
-Also, do not forget that the new matrix will be a M$\times$K matrix. This means that we need to do these operations for every M*K entry in the new matrix. However, assuming we have enough proceses, we can send every operation to different groups of processes. And this way, we can improve the complexity of matrix multiplication from O(N*M*K) to O(log(M))\\
+Ant the sequential algorithm's time only depends on computations which comes up to N$^3$-N$^2$ or O($N^3$)\\
 \\
-\textbf{Important Note 1(for enough processes):} The real complexity of the matrix multiplication would not be O(log(M)) even if we have enough number of processes the best complexity would get be O(N*K) even though the operations would be done in O(log(M)) time. The reason for this is we would need to combine the data. Moreover, while sending messages is an O(t$_s$+mt$_m$) operation; for every entry of the matrix the receiver process(after the final computation one of the processes would need to gather every entry) would need to receive them all. Because of that the complexity cannot be improved that much. Even with the MPI\_Gather(which would take log(N*K)t$_s$+(N*K-1)mt$_m$ time) our complexity will be log(P)(t$_{calculation}$+t$_s$+mt$_m$)+log(N*K)t$_s$+(N*K-1)mt$_m$ which would make the complexity(assuming P is as high as N*M*K or higher) O(N*K*m*t$_m$) or O(N*K) since m and t$_m$ are constant.\\
-\\
-\textbf{Important Note 2(for not enough processes):} We would need to do N*M*K/P multiplications per process first. Then in every process we will have calculated M/P multiplications for every N*K entry which needs to be added in (M-1)/P addition operations so in total we will do ((M-1)/P) additions sequentially N*K times in every process. After that we would need to add these seperate parts from every process log(P)(t$_s$+m*t$_m$) m is N*K since we are gonna do this for every c$_xy$.
-so in the end we have
-\begin{itemize}
-	\item N*M*K/P\quad from multiplications
-	\item N*K*(M-1)/P\quad from sequential additions
-	\item log(P)(t$_s$+N*K*t$_m$) \quad from parellel additions
-\end{itemize}
-So the total complexity for this case would be:\\
-\[O(log(P)t_s+NK(\dfrac{2M-1}{P}+log(P)t_m))\]
-and since t$_s$ and t$_m$ are constants and log(P) is lower then NKlog(p) we can simplify the complexity into:
-\[O(NK(\dfrac{M}{P}+log(P)))\]
-
- 
+\textbf{Note:} Because of the scatter and gather operations time complexity will never exceed O(N$^2$). And increasing the number of processes is not always efficient.The problem is that just sending the matrix itself would take O(N$^2$) opearions so thinking that this is the best case.
