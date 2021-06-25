@@ -287,6 +287,8 @@ int main(){
                             size_1*2+i*block_size+k,MPI_COMM_WORLD,&status);
             }
         }
+        //algorithm is over now we can write the time
+        printf("Parallel time is %f seconds\n",MPI_Wtime()-TIMER);       //writing time
 
         FILE* file=fopen("output","w");
         print_matrix((int**)C,N,file);
@@ -312,10 +314,6 @@ int main(){
 
 
 
-    if(!rank){
-        //print C here
-        printf("Parallel time is %f seconds\n",MPI_Wtime()-TIMER);       //writing time
-    }
     MPI_Finalize();
 
 }

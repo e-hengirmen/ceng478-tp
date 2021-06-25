@@ -1,1 +1,17 @@
-appendix
+There are 2 c files in the src directory \textbf{serial.c} and \textbf{solution.c}. \textbf{solution.c} has the parallel algorithm while \textbf{serial.c} has the sequential one.\\
+\\
+To use the codes use \textbf{script.sh} inside the src directory.It works in this order:
+\begin{itemize}
+	\item It will compile \textbf{solution.c}(with 4 processors u can change it by going inside script.sh) and \textbf{serial.c}
+	\item Then it will start parallel algorithm
+		\subitem Parallel algorithm will first create A and B matrices
+		\subitem Then copy them inside \textbf{input} file(for sequential algorithm's use)
+		\subitem At this point it starts Parallel timer
+		\subitem After calculating the solutions it will first write the time it took to calculate C matrix in seconds.
+		\subitem After that it will record the C matrix inside the \textbf{output} file
+	\item Then it will run sequential algorithm with the inputs from parallel algorithm
+		\subitem Sequential algorithm will start the timer after getting inputs and stop the timer and print it after calculation is done
+		\subitem after printing the timer sequential algorithm will save the C matrix inside \textbf{output2} file.
+	\item then the script will call diff command with output and output2
+\end{itemize}
+\textbf{Important Note:} Before using them make sure serial. \textbf{solution.c} and \textbf{serial.c} both has the same defined value for N or they will produce different results because of their different matrix sizes.

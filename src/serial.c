@@ -65,14 +65,14 @@ int main(){
 
 
 
+    double TIME=(double)(clock()-TIMER)/CLOCKS_PER_SEC;
+    printf("Sequential time is %f seconds\n",TIME);
 
 
     FILE *file=fopen("output2","w");
     print_matrix((int**)C,N,file);
     fclose(file);
 
-    double TIME=(double)(clock()-TIMER)/CLOCKS_PER_SEC;
-    printf("Sequential time is %f seconds\n",TIME);
 
 }
 
