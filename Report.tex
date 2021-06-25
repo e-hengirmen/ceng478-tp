@@ -1,0 +1,101 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\graphicspath{{Images/}}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{positioning,fit,arrows.meta,backgrounds}
+\graphicspath{ {images/} }
+
+
+\usepackage{xcolor}
+
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{4}
+
+\tikzset{
+	module/.style={%
+		draw, rounded corners,
+		minimum width=#1,
+		minimum height=5mm,
+		font=\sffamily
+	},
+	module/.default=2cm,
+	>=LaTeX
+}
+
+
+\begin{document}
+	\begin{titlepage}
+		\newcommand{\HRule}{\rule{\linewidth}{0.1mm}} 
+		\center 
+		\includegraphics[scale=0.05]{metu} \\
+		\vspace{1cm}
+		\textsc{\Large MIDDLE EAST TECHNICAL UNIVERSITY}\\[0.5cm]
+		\HRule \\[0.4cm]
+		{ \huge \Large Project Report}\\[0.4cm]
+		\textsc{\large CENG478 - Introduction to Parallel Programming}\\
+		\large Parallellizing Matrix Multiplication\\
+		\HRule \\[0.3cm]
+		{\today}\\[1.2cm]
+		
+		
+
+			\begin{flushleft} \large
+				\textbf{Student Name/Number:} Ersel Hengirmen / 2468015\\
+			\end{flushleft}
+
+
+	\end{titlepage}
+	
+	\begingroup
+	\hypersetup{hidelinks}
+	\tableofcontents
+	\endgroup
+          
+	\newpage
+	
+	\section{Introduction}
+	\input{Chapters/Introduction}
+
+	\section{Proposed Model}
+	\subsection{Assumptions}
+	\begin{itemize}
+		\item We are asssuming that we have an hpc network with cut through routing.
+		\item We are asssuming that only one of the processes has the Initial A and B matrices stored in it.
+		\item Because of the first assumption we will assume that message transfer cost is t$_s$+mt$_m$
+		\item We are assuming that the network is in 2D-mesh topology.
+	\end{itemize}
+	\subsection{Restrictions}
+	\begin{itemize}
+		\item To use cannon's algorithm easily we will restrict process count to be a square number(like 1 4 9 16)
+		\item Also to make the matrix blocks homogenous we will only accept N when it is square root of process count's multiple.(for example when N is 12 the process count can be 4,9,16,36,144 because 12 is divisible to their square roots (2,3,4,6,12))
+		
+	\end{itemize}
+	
+	\subsection{ Parallelizing Matrix Multiplication}
+	\input{Chapters/Problem2.tex}
+	
+	\section{Discussion}
+	\input{Chapters/Discussion}
+	
+	\section{Conclusion}
+	\input{Chapters/Conclusion}
+
+	\section{Appendix}
+	\input{Chapters/Appendix}
+	
+	\newpage
+	
+	\bibliographystyle{acm}
+	\bibliography{Bibliography.bib}
+	$^{[1]}$\url{https://en.wikipedia.org/wiki/Matrix_multiplication_algorithm}\\
+	$^{[2]}$\url{https://en.wikipedia.org/wiki/Cannon%27s_algorithm}\\
+	$^{[3]}$\url{https://en.wikipedia.org/wiki/Galactic_algorithm}\\
+	
+	
+\end{document}

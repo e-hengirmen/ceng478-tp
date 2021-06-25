@@ -1,0 +1,34 @@
+In this problem we will focus on N$\times$N matrix multiplication with 2 N$\times$N matrices. Let's say we have A and B matrices (A and B being N$\times$N matrices) and want to find A.B=C matrix. For example:
+\[
+\begin{bmatrix}
+a_{11}  &  a_{12} & a_{13}      \\
+a_{21}  &  a_{22} & a_{23}      \\
+a_{31}  &  a_{32} & a_{33}      \\
+\end{bmatrix}
+*
+\begin{bmatrix}
+b_{11}  &  b_{12} & b_{13}     \\
+b_{21}  &  b_{22} & b_{23}     \\
+b_{31}  &  b_{32} & b_{33}
+\end{bmatrix}
+=
+\begin{bmatrix}
+c_{11}  &  c_{12} & c_{13}      \\
+c_{21}  &  c_{22} & c_{23}      \\
+c_{31}  &  c_{32} & c_{33}      
+
+\end{bmatrix}
+\]
+To find any $c_{xy}$ in a matrix multiplication like the one above, we would need to calculate the below equation:
+\begin{equation*}
+\begin{split}
+\quad c_{xy}=\sum_{z=1}^{N}a_{xz}*b_{zk}
+\end{split}
+\end{equation*}
+Which would require O(N$^3$) amount of time complexity. \\
+\\
+There are also algorithms like \href{https://en.wikipedia.org/wiki/Strassen_algorithm}{Strassen's algorithm} which has a complexity near O(N$^{2.8074}$) and as of December 2020 there has been a new algorithm of complexity O(N$^{2.3728596}$) which is said to be best complexity ıntil now. This algorithm was created by Josh Alman and Virginia Vassilevska Williams. However this algorithm is a galactic algorithm.$^{[1]}$\\
+\\
+In this project we will not focus on the other algorithms but try to design a Paralel model for O(N$^3$) model to reduce its complexity because of its convenience to adapt into parallel models. We will use \href{https://en.wikipedia.org/wiki/Cannon%27s_algorithm}{Cannon's algorithm} to parallelize it$^{[2]}$.\\
+\\
+Note: A galactic algorithm is one that outperforms any other algorithm for problems that are sufficiently large, but where "sufficiently large" is so big that the algorithm is never used in practice.$^{[3]}$

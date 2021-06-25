@@ -1,0 +1,1 @@
+To complete matrix addition parallelly for 2 N$\times$M matrices, we would just need to add every entry from 2 matrices one by one. If we have enough processors, this is an O(1) operation. As for K processors, we can easily do this by sending every processor (N*M/K) sized entry group to solve.

@@ -1,0 +1,435 @@
+\subsection{Linear Programming Algorithm}
+We will solve the Linear problems with simplex method. I will solve an example problem to show how the algorithm works.\\
+\\
+\underline{\textbf{Objective function:}}\\
+\begin{equation*}
+\begin{split}
+max(x+3y+z) \\
+\end{split}
+\end{equation*}
+\underline{\textbf{Restrictions:}}\\
+\begin{equation*}
+\begin{split}
+x+4y\leq 12
+\end{split}
+\end{equation*}
+\begin{equation*}
+\begin{split}
+3x+6y+4z\leq 48
+\end{split}
+\end{equation*}
+\begin{equation*}
+\begin{split}
+y+z\leq 8
+\end{split}
+\end{equation*}
+\underline{\textbf{Sign Restrictions:}}\\
+\begin{equation*}
+\begin{split}
+x,y,z\in Z^+
+\end{split}
+\end{equation*}
+\subsubsection{\underline{Step 1 - Transforming into Standard Form}}
+For the problem to be a solvable we can not use $\geq$ and $\leq$ restrictions we can only have "=" restrictions. So we need to tweak our problem model a little bit. To do this we will change $\geq$ and $\leq$ restrictions into equalities by adding a new variable for every inequality. For example:\\
+ \[y+z\leq 8\]\quad for this restriction we have 2 cases
+ \begin{itemize}
+ 	\item y+z=8:
+ 		\subitem In this case we wouldn't have to do anything since it is an equality
+ 	\item y+z$<$8:
+ 		\subitem Let's say y+z=5. Than y+z is less then 8 by 3. If we represent 3 with another variable, let's call it s, than the inequality will transform into y+z+s=8 equality and this way we will be able to transform our restriction.
+ \end{itemize}
+\textbf{Note 1:} The variable s that we added to our model is called a slack variable. If we had an inequality with "$\leq$" then we would look at the y+z$>$8 case and add a variable with "-" sign to turn it into an equality, like y+z-e=8.\\
+\\
+\textbf{Note 2:} We cannot have restrictions of "$>$ and $<$" types. Because we cannot transform them into equalities.
+\\
+
+After applying these operations the standard of the problem will be:\\
+\underline{\textbf{Objective function:}}\\
+\begin{equation*}
+\begin{split}
+max(x+3y+z) \\
+\end{split}
+\end{equation*}
+\underline{\textbf{Restrictions:}}\\
+\begin{equation*}
+\begin{split}
+x+4y+s_1=12
+\end{split}
+\end{equation*}
+\begin{equation*}
+\begin{split}
+3x+6y+4z+s_2=48
+\end{split}
+\end{equation*}
+\begin{equation*}
+\begin{split}
+y+z+s_3=8
+\end{split}
+\end{equation*}
+\underline{Sign Restrictions:}\\
+\begin{equation*}
+\begin{split}
+x,y,z,s_1,s_2,s_3\in Z^+
+\end{split}
+\end{equation*}
+\subsubsection{\underline{Step 2 - Creation of initial matrix model}}
+Now we will show our restrictions objective function with 4 matrices:\\
+\begin{itemize}
+	\item A \quad (matrix of restriction coefficient)
+	\item b \quad (matrix of restriction constant
+	\item x \quad (matrix of variables)
+	 results(right hand side of the problem))
+	\item c \quad (matrix of objective function coefficient)
+\end{itemize}
+Our objective is to find the x matrix by using below model:\\
+\\	
+\textbf{Find x}\\
+\textbf{For objective function \quad Maximize c$^T$x}\\
+\textbf{restricted by Ax=b}\\
+\textbf{and x$\geq$0}\\
+\\
+For our example, these matrices are:\\
+\\
+\[A=
+\begin{bmatrix}
+	1 & 4 & 0 & 1 & 0 & 0 \\
+	3 & 6 & 4 & 0 & 1 & 0 \\
+	0 & 1 & 1 & 0 & 0 & 1 \\
+\end{bmatrix}
+,b=
+\begin{bmatrix}
+12\\
+48\\
+8
+\end{bmatrix}
+,x=
+\begin{bmatrix}
+x\\
+y\\
+z\\
+s_1\\
+s_2\\
+s_3\\
+\end{bmatrix}
+,c=
+\begin{bmatrix}
+1\\
+3\\
+1\\
+0\\
+0\\
+0\\
+\end{bmatrix}
+\]
+\\
+\textbf{Note 1:} other then the b matrix we will not need to create these matrices to solve the Linear Problem. They are an intermediary step that we can pass.\\
+\\
+\textbf{Note 2:} Let restriction count be R, variable count be N. In this case A is a R$\times$N, b is a R$\times$1, c is a N$\times$1, x is a N$\times$1 matrix.(We are also counting slack and excess variables for N)\\
+\\
+\subsubsection{\underline{Step 3 - Initializing iteration}}
+We will choose R variables as our base(consisting of basic variables) and divide A,c and x matrices into 2 parts to solve the problem.
+\begin{itemize}
+	\item A=[B$|$N]
+		\subitem B will represent the coefficients of the basic variables inside restrictions
+		\subitem N will represent the coefficients of the non-basic variables inside restrictions
+	\item c=[c$_B$$|$c$_N$]
+		\subitem c$_B$ will represent the coefficients of the basic variables inside the objective function
+		\subitem c$_N$ will represent the coefficients of the non-basic variables inside the objective function
+	\item x=[x$_B$$|$x$_N$]
+		\subitem x$_B$ will represent the basic variables
+		\subitem x$_N$ will represent the non-basic variables
+\end{itemize}
+\textbf{Note:} The first B matrix must only contain slack variables. If there are not enough slack variables then we will add variables in the restrictions like a slack variable(artificial variable) while making sure they are not going to take part in the final configuration. We do that by adding the newly created artificial variable to the objective function with high negative coefficients. For example:\\$\mathbf{max(x+3y+z-999999a_1-999999a_2}$) \\
+\\
+After some iterations we will have y,z,s$_2$ as the basic variables for the of an iteration then our matrices (with b)will be:
+\[
+b=\begin{bmatrix}
+12\\
+48\\
+8
+\end{bmatrix}
+\]
+\[
+B=\begin{bmatrix}
+4&0&0\\
+6&4&1\\
+1&1&0
+\end{bmatrix}
+,c_B=\begin{bmatrix}
+3\\
+1\\
+0
+\end{bmatrix}
+,x_B=\begin{bmatrix}
+y\\
+z\\
+s_2
+\end{bmatrix}
+\]
+\[
+N=\begin{bmatrix}
+1&1&0\\
+3&0&0\\
+0&0&1
+\end{bmatrix}
+,c_N=\begin{bmatrix}
+1\\
+0\\
+0
+\end{bmatrix}
+,x_N=\begin{bmatrix}
+z\\
+s_1\\
+s_3
+\end{bmatrix}
+\]
+\subsubsection{\underline{Step 4 - Checking optimality}}
+At this step we will check if the current configuration of basic variables are giving the best answer. If they do, we will stop. If they do not, we will exchange a variable from B and N that will give us a better solution until the configuration is optimal.\\
+\\
+The formula for calculating optimality is \textbf{c$_N^T$-c$_B^T$B$^{-1}$N}(known as reduced cost vector). If any one of the entries of reduced cost vector is positive(This is for maximizing problems. If it was a minimizing problem, we would have needed to look for negative entries). If we have a positive entry, we will exchange the variable that corresponds to it from x$_N$.(beware that x is non-negative)\\
+\\
+lets calculate it for our problem):\\
+\[c_N^T-c_B^TB^{-1}N\]
+\[
+B^{-1}=
+\begin{bmatrix}
+1/4  &0&0\\
+-1/4 &0&1\\
+-1/2 &1&-4
+\end{bmatrix}
+\]
+\[
+c_B^TB^{-1}=
+\begin{bmatrix}
+1/2&0&1\\
+\end{bmatrix}
+\]
+\[
+c_B^TB^{-1}N=\begin{bmatrix}
+1/2&1/2&1\\
+\end{bmatrix}
+\]
+\[c_N^T-c_B^TB^{-1}N=
+\begin{bmatrix}
+1/2&-1/2&-1\\
+\end{bmatrix}
+\]
+Since one of the entries of the reduced cost vector(1st entry which corresponds to x from non-basic variable matrix) is negative the configuration is not optimal. So we need to do another iteration by adding x to our basic variables and removing one of the basic variables from B matrix.\\
+\\
+To choose the new variable we will calculate x values for every row of $B^{-1}a_xx=B^{-1}b$(\textit{a$_x$ is the column in non-basic(N) matrix that corresponds to x}) formula and remove the variable that corresponds to the row with lowest positive x value from the basis. 
+\[x_B+B^{-1}a_xx=B^{-1}b\]
+\[->
+\begin{bmatrix}
+y\\
+z\\
+s_2
+\end{bmatrix}
+\begin{matrix}
+<->\\
+<->\\
+<->
+\end{matrix}
+\begin{bmatrix}
+1/4  &0&0\\
+-1/4 &0&1\\
+-1/2 &1&-4
+\end{bmatrix}
+\begin{bmatrix}
+1\\
+3\\
+0
+\end{bmatrix}
+x=\begin{bmatrix}
+1/4  &0&0\\
+-1/4 &0&1\\
+-1/2 &1&-4
+\end{bmatrix}
+\begin{bmatrix}
+12\\
+48\\
+8
+\end{bmatrix}
+\]
+\[->
+\begin{bmatrix}
+y\\
+z\\
+s_2
+\end{bmatrix}
+\begin{matrix}
+<->\\
+<->\\
+<->
+\end{matrix}
+\begin{bmatrix}
+1/4\\
+-1/4\\
+5/2
+\end{bmatrix}
+x=
+\begin{bmatrix}
+3\\
+5\\
+10
+\end{bmatrix}
+\]
+y will need x to be 12 and s$_2$ will need x to be 4(z can not be chosen because it must have a positive value and since its coefficient is negative its equality will not hold). Thats why s$_2$ will leave the basis. Now we will do one more iteration with x,y,z in the basis:
+\[
+b=\begin{bmatrix}
+12\\
+48\\
+8
+\end{bmatrix}
+\]
+\[
+B=\begin{bmatrix}
+1&4&0\\
+3&6&4\\
+0&1&1
+\end{bmatrix}
+,c_B=\begin{bmatrix}
+1\\
+3\\
+1
+\end{bmatrix}
+,x_B=\begin{bmatrix}
+x\\
+y\\
+z
+\end{bmatrix}
+\]
+\[
+N=\begin{bmatrix}
+1&0&0\\
+0&1&0\\
+0&0&1
+\end{bmatrix}
+,c_N=\begin{bmatrix}
+0\\
+0\\
+0
+\end{bmatrix}
+,x_N=\begin{bmatrix}
+s_1\\
+s_2\\
+s_3
+\end{bmatrix}
+\]
+now lets calculate reduced cost vector once again:
+\[c_N^T-c_B^TB^{-1}N\]
+\[
+B^{-1}=
+\begin{bmatrix}
+-1/5  &2/5&-8/5\\
+3/10 &-1/10&2/5\\
+-3/10 &1/10&3/5
+\end{bmatrix}
+\]
+\[
+c_B^TB^{-1}=
+\begin{bmatrix}
+2/5&1/5&1/5\\
+\end{bmatrix}
+\]
+\[
+c_B^TB^{-1}N=\begin{bmatrix}
+2/5&1/5&1/5\\
+\end{bmatrix}
+\]
+\[c_N^T-c_B^TB^{-1}N=
+\begin{bmatrix}
+-2/5&-1/5&-1/5\\
+\end{bmatrix}
+\]
+Since Reduced cost vector does not have any positive entries the current configuration is optimal. Now we can go to step 5 to find the result.
+
+\subsubsection{\underline{Step 5 - Finding result and variable values}}
+Now what we have to do is calculating B$^{-1}$b. this will give us variable values inside x$_B$. variables inside x$_N$ are non-basic so their values will be 0. after that by calculating c$_B^T$B$^{-1}$b we will get the maximixed value of the objective function\\
+\\
+Let's calculate it for given example:\\
+\\
+\[
+B^{-1}b=
+\begin{bmatrix}
+-1/5  &2/5&-8/5\\
+3/10 &-1/10&2/5\\
+-3/10 &1/10&3/5
+\end{bmatrix}
+*
+\begin{bmatrix}
+12\\
+48\\
+8
+\end{bmatrix}
+=
+\begin{bmatrix}
+4\\
+2\\
+6
+\end{bmatrix}
+\]
+
+
+\[
+c_B^TB^{-1}b=
+\begin{bmatrix}
+1&3&1\\
+\end{bmatrix}
+*
+\begin{bmatrix}
+-1/5  &2/5&-8/5\\
+3/10 &-1/10&2/5\\
+-3/10 &1/10&3/5
+\end{bmatrix}
+*
+\begin{bmatrix}
+12\\
+48\\
+8
+\end{bmatrix}
+\]
+\[=
+\begin{bmatrix}
+1&3&1\\
+\end{bmatrix}
+*
+\begin{bmatrix}
+4\\
+2\\
+6
+\end{bmatrix}
+=
+16\\
+\]
+
+so the solution to the linear problem is 16 and configuration of x,y,z are $\begin{bmatrix}4&	2&	6\end{bmatrix}$
+
+\subsection{Integer Programming Algorithm}
+We will solve Integer Programming problems in 6 steps.
+\begin{itemize}
+	\item \textbf{Step 1 - Initialize:} In initialize step, the program initializes the below variables. This step will not be repeated.
+	\subitem 1) L=\{IP$^0$\}\quad (L is the queue or list of integer problems. It starts with the original problem. z$_u^L$ of the IP$^0$ is +$\infty$(z$_u^L$ is the upper limit of the problem))
+	\subitem 2) z$_L$=-$\infty$\quad (z$_L$ is the current best solution to our objective function)
+	\subitem 3) x$^*$=$\emptyset$\quad (x$^*$ is the current set of valid values for variables of the problem)
+	\item \textbf{Step 2 - Terminate:} Check L. If L is empty, the program has found the best solution. The best solution is z$_L$, and the variable values of that solution are x$^*$.
+	\item \textbf{Step 3 - Select:} Take an IP from L. Choose it as current IP; remove it from L and go to step 4.
+	\item \textbf{Step 4 - Solve:} Solve the LP version (Linear version) of the current IP. and assign its variable values as X and its result as z$_{LP}$. Go to step 5.
+	\item \textbf{Step 5 - Control:} if z$_L\geq $z$_{LP}$ the new solution or solutions that come from this IP can not be better than what we currently have, so go back to step 2.\\
+	If X is valid(if its values that need to be integers are integers) and z$_L<$z$_{LP}$, apply below steps. Then go back to step 2.
+	\subitem 1) z$_L$=z$_{LP}$
+	\subitem 2) x$^*$=X\quad
+	\subitem 3) Delete every problem whose z$_u^L$ is less than newly assigned z$_L$ from L. 
+	\\
+	If X is not a valid solution(has fractional values for integer variables) go to step 6 
+	\item \textbf{Step 6 - Branch:} Branch into 2 problems from the integer limits of the LP solution. To give an example we will look at X=\{1,0.2,0.7,121\}, z$_{LP}=25$. Here x$_2$ and x$_3$ are fractional values. We can choose any one of them to branch out. In this example, we will use x$_2$.
+		\subitem\textbf{IP$^{first}$:} Is the same as current IP with 2 differences
+			\subsubitem x$_2\geq1$ \quad is added to restrictions
+			\subsubitem z$_u^L$=z$_{LP}$ \quad (upper limit of the new problem is registered as a result of the current problem)
+		\subitem\textbf{IP$^{second}$:}
+			\subsubitem x$_2\leq0$ \quad is added to restrictions
+			\subsubitem z$_u^L$=z$_{LP}$ \quad (upper limit of the new problem is registered as a result of the current problem)
+		
+\end{itemize}
+To optimize the parallel version problem, we will modify the algorithm by removing step 5’s \textbf{"Delete every problem whose z$_u^L$ is less than newly assigned z$_L$ from L"} rule when X is valid and z$_L<$z$_{LP}$. And modify step 3 into: \textbf{"Take an IP from L. If it's z$_u^L$ is higher than z$_L$, choose it as current IP; remove it from L and go to step 4. If it is not higher, go back to step 2."}\\
+\\
+\textbf{Note:} The above algorithm is for maximizing IP problems. Minimizing problems can also be solved by the above algorithm by changing some of its steps and variables (e.g. using z$_l^L$ (lower limit) instead of z$_u^L$ (upper limit)).

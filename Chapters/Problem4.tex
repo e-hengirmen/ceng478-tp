@@ -1,0 +1,15 @@
+This part does not include a parallel method. But instead, it is a way to decrease operation count and reduce the stress on the processors.\\ 
+\\
+At times, we will need to use matrix multiplication operations consecutively to solve linear programming problems. However, at those times, using Matrix Multiplication's associative property might reduce the operation count and time complexity of our problems.\\
+\\
+For example, if we need to calculate D=A.B.C for A being M$\times$N, B being N$\times$K, C being K$\times$L matrices;
+we can do the matrix multiplications in two ways. Either (A.B).C or A.(B.C). which would result in different computation:
+\begin{itemize}
+	\item \textbf{(A.B).C -$>$} In the first step, we would need to create a matrix of size M$\times$K from A.B matrices which would take M*N*K operations in total and log(N) operations in parallel computation time(also the processor that stores the matrix would need to receive the newly created matrix which would increase our complexity to O(log(N)+M*K)). After that, we would need to multiply our newly created matrix with the C matrix to create M$\times$L D matrix. This would take  M*K*L operations in total and log(K) operations in parallel time. But we would still need to receive the D matrix, which means total operation count and parallel time complexities are respectively:
+	\[M*N*K+M*K*L = \mathbf{M*K*(N+L)}\]
+	\[O(log(N)+M*K) + O(log(K)+M*L) = \mathbf{O(log(NK)+M*K+M*L))}\]
+	\item \textbf{A.(B.C) -$>$} In the first step, we would need to create a matrix of size N$\times$L from B.C matrices which would take N*K*L operations in total and log(K) operations in parallel computation time(also the processor that stores the matrix would need to receive the newly created matrix which would increase our complexity to O(log(K)+N*L)). After that, we would need to multiply the A matrix with our newly-created matrix to create M$\times$L D matrix. This would take  M*N*L operations in total and log(N) operations in parallel time. But we would still need to receive the D matrix, which means total operation count and parallel time complexities are respectively:
+	\[N*K*L+M*N*L = \mathbf{N*L*(K+M)}\]
+	\[O(log(K)+N*L) + O(log(N)+M*L) = \mathbf{O(log(NK)+L*M+L*N))}\]
+\end{itemize}
+Since \textbf{log(N*K)} and \textbf{L*M} exist on both parts, we can choose the order of matrix multiplications by comparing \textbf{M*K} with \textbf{L*N}.
