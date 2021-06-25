@@ -1,5 +1,6 @@
 # ceng478-tp
 Repository for ceng478 Introduction to Parallel Computing term project
+The term project is about parallelizing matrix multiplication
 ## [Report.pdf](https://github.com/e-hengirmen/ceng478-tp/blob/main/Report.pdf)
 Contains my Term Project report 
 ## [solution.c](https://github.com/e-hengirmen/ceng478-tp/blob/main/src/solution.c)
