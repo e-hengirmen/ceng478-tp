@@ -8,7 +8,7 @@
 
 int rank,size;
 
-#define N 1250  //1250 max
+#define N 1200  //1250 max
 
 int A[N][N],B[N][N];    // NxN input matrices
 int C[N][N];            // NxN result matrix
@@ -127,9 +127,9 @@ int main(){
         for(int i=0;i<size;i++){        //sending row and column groups to every process
             int a=i/size_1,b=i%size_1; 
             int A_first_index=block_size*(a);
-            int A_second_index=block_size*((b-a+size_1)%size_1);
+            int A_second_index=block_size*((b+a+size_1)%size_1);
 
-            int B_first_index=block_size*((a-b+size_1)%size_1);
+            int B_first_index=block_size*((a+b+size_1)%size_1);
             int B_second_index=block_size*(b);
 
 
@@ -183,13 +183,13 @@ int main(){
 
 
 
-    int previous_partner_A=rank-1,next_partner_A=rank+1;
-    if(rank%size_1==0)previous_partner_A=rank+(size_1-1);
-    if(rank%size_1==size_1-1)next_partner_A=rank-(size_1-1);
+    int previous_partner_A=rank+1,next_partner_A=rank-1;
+    if(rank%size_1==0)next_partner_A=rank+(size_1-1);
+    if(rank%size_1==size_1-1)previous_partner_A=rank-(size_1-1);
 
-    int previous_partner_B=rank-size_1,next_partner_B=rank+size_1;
-    if(rank/size_1==0)previous_partner_B=rank+(size_1-1)*size_1;
-    if(rank/size_1==size_1-1)next_partner_B=rank-(size_1-1)*size_1;
+    int previous_partner_B=rank+size_1,next_partner_B=rank-size_1;
+    if(rank/size_1==0)next_partner_B=rank+(size_1-1)*size_1;
+    if(rank/size_1==size_1-1)previous_partner_B=rank-(size_1-1)*size_1;
 
     //partners that we will send and receive blocks from has been chosen
 
@@ -258,8 +258,8 @@ int main(){
         }
         //------------------------------------------------------
         MPI_Status statusWait[2];
-        // MPI_Waitall(2,send_RQ,statusWait);
-        MPI_Waitall(1,send_RQ,statusWait);
+        MPI_Waitall(2,send_RQ,statusWait);
+        // MPI_Waitall(1,send_RQ,statusWait);
 
     }
     // 
