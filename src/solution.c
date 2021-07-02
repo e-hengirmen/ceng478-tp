@@ -78,6 +78,39 @@ int main(){
     int block_size=N/size_1;     //dimensions of the block that we are gonna send 
 
 
+
+
+
+
+
+    int A_Block[block_size][block_size],B_Block[block_size][block_size],C_Block[block_size][block_size];
+    //this are the blocks of size N/sqrt(p) x N/sqrt(p) 
+        //block A and B are blocks that will come from process 0 block C is the result matrix
+
+    int A_Block1[block_size][block_size],B_Block1[block_size][block_size];
+    //these blocks will be mutually used to with A/B_Blocks enhance send receive operations .
+    
+    //------------------------third-------------------------
+    for(int i=0;i<block_size;i++){
+        for(int k=0;k<block_size;k++){
+            C_Block[i][k]=0;
+        }
+    }
+    //------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
     if(!rank){
         A=(int*)malloc(N*N*sizeof(int));
         B=(int*)malloc(N*N*sizeof(int));
@@ -149,19 +182,6 @@ int main(){
 
 
 
-    int A_Block[block_size][block_size],B_Block[block_size][block_size],C_Block[block_size][block_size];
-    //this are the blocks of size N/sqrt(p) x N/sqrt(p) 
-        //block A and B are blocks that will come from process 0 block C is the result matrix
-    
-    //------------------------third-------------------------
-    for(int i=0;i<block_size;i++){
-        for(int k=0;k<block_size;k++){
-            C_Block[i][k]=0;
-        }
-    }
-    //------------------------------------------------------
-
-
 
 
 
@@ -199,8 +219,7 @@ int main(){
     //partners that we will send and receive blocks from has been chosen
 
 
-    int A_Block1[block_size][block_size],B_Block1[block_size][block_size];
-    //these blocks will be mutually used to with A/B_Blocks enhance send receive operations .
+
 
         int which=0;
     int (*NEXT_A)[block_size];
@@ -316,7 +335,10 @@ int main(){
 
 
 
-
+    if(!rank)
+        free(A),
+        free(B),
+        free(C);
 
 
     MPI_Finalize();
