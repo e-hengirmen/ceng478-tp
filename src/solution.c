@@ -81,22 +81,34 @@ int main(){
 
 
 
-
-
-    int A_Block[block_size][block_size],B_Block[block_size][block_size],C_Block[block_size][block_size];
-    //this are the blocks of size N/sqrt(p) x N/sqrt(p) 
+    int *AA_Block=(int*)malloc(block_size*block_size*sizeof(int)),
+        *BB_Block=(int*)malloc(block_size*block_size*sizeof(int)),
+        *AA_Block1=(int*)malloc(block_size*block_size*sizeof(int)),
+        *BB_Block1=(int*)malloc(block_size*block_size*sizeof(int)),
+        *CC_Block=(int*)calloc(block_size*block_size,sizeof(int));
+    if(AA_Block==NULL||BB_Block==NULL||CC_Block==NULL||AA_Block1==NULL||BB_Block1==NULL){
+        printf("Your system could not allocate enough space\nAborted\n");
+        MPI_Abort(MPI_COMM_WORLD,3);
+    }
+    //A/B blocks are the blocks of size N/sqrt(p) x N/sqrt(p) 
         //block A and B are blocks that will come from process 0 block C is the result matrix
+    //these blocks will be mutually used to with A/B_Blocks enhance send receive operations .
 
-    int A_Block1[block_size][block_size],B_Block1[block_size][block_size];
+    int (*A_Block)[block_size]=(int(*)[block_size])AA_Block;
+    int (*B_Block)[block_size]=(int(*)[block_size])BB_Block;
+    int (*C_Block)[block_size]=(int(*)[block_size])CC_Block;
+    int (*A_Block1)[block_size]=(int(*)[block_size])AA_Block1;
+    int (*B_Block1)[block_size]=(int(*)[block_size])BB_Block1;
+
+
+
+    // int A_Block[block_size][block_size],B_Block[block_size][block_size],C_Block[block_size][block_size];
+    // //this are the blocks of size N/sqrt(p) x N/sqrt(p) 
+    //     //block A and B are blocks that will come from process 0 block C is the result matrix
+
+    // int A_Block1[block_size][block_size],B_Block1[block_size][block_size];
     //these blocks will be mutually used to with A/B_Blocks enhance send receive operations .
     
-    //------------------------third-------------------------
-    for(int i=0;i<block_size;i++){
-        for(int k=0;k<block_size;k++){
-            C_Block[i][k]=0;
-        }
-    }
-    //------------------------------------------------------
 
 
 
@@ -108,13 +120,14 @@ int main(){
 
 
 
-    
+
+
 
 
     if(!rank){
         A=(int*)malloc(N*N*sizeof(int));
         B=(int*)malloc(N*N*sizeof(int));
-        C=(int*)calloc(N*N,sizeof(int));
+        C=(int*)malloc(N*N*sizeof(int));
     }
     
     if(!rank&&size_1*size_1!=size){
@@ -339,6 +352,11 @@ int main(){
         free(A),
         free(B),
         free(C);
+    free(AA_Block);
+    free(BB_Block);
+    free(CC_Block);
+    free(AA_Block1);
+    free(BB_Block1);
 
 
     MPI_Finalize();
