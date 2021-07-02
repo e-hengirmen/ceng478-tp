@@ -74,6 +74,9 @@ int main(){
 
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     MPI_Comm_size(MPI_COMM_WORLD,&size);
+    int size_1=sqrt(size);
+    int block_size=N/size_1;     //dimensions of the block that we are gonna send 
+
 
     if(!rank){
         A=(int*)malloc(N*N*sizeof(int));
@@ -81,7 +84,6 @@ int main(){
         C=(int*)calloc(N*N,sizeof(int));
     }
     
-    int size_1=sqrt(size);
     if(!rank&&size_1*size_1!=size){
         printf("number of processes is not a square number\nAborted\n");
         MPI_Abort(MPI_COMM_WORLD,2);
@@ -118,7 +120,6 @@ int main(){
 
 
     //--------------------------2---------------------------
-    int block_size=N/size_1;     //dimensions of the block that we are gonna send 
 
     if(!rank){          //sending row and column groups from process 0 to others
         MPI_Datatype BLOCK;
