@@ -10,21 +10,24 @@ int rank,size;
 
 #define N 1200  //1250 max
 
+int A[N][N],B[N][N];    // NxN input matrices
+int C[N][N];            // NxN result matrix
 
-
-void create_matrices(int *A,int *B){
-    int x=N*N;
-    for(int i=0;i<x;i++){
-        A[i]=rand()%10;        //0 to 9
-        B[i]=rand()%10;        //0 to 9
-    }
+void create_matrices(){
+    for(int i=0;i<N;i++)for(int k=0;k<N;k++)A[i][k]=rand()%10;        //0 to 9
+    for(int i=0;i<N;i++)for(int k=0;k<N;k++)B[i][k]=rand()%10;        //0 to 9
+    /*for(int i=0;i<16;i++){
+        A[i/N][i%N]=i;
+        B[i/N][i%N]=1+i%N;
+    }*/
 }
 
 
-void print_matrix(int *arr,int n,FILE* file){
+void print_matrix(int **MAT,int n,FILE* file){
+    int (*arr)[n]=(int(*)[n])MAT;
     for(int i=0;i<n;i++){
         for(int k=0;k<n;k++){
-            fprintf(file,"%d ",arr[i*n+k]);
+            fprintf(file,"%d ",arr[i][k]);
         }
         fprintf(file,"\n");
     }
@@ -67,19 +70,13 @@ fourth      --->    Sending Block back to process 0 for presentation
     //using a square number of processes is neccessary (for example:4 9 16)
     //also dimensions of the matrix must be divisible to the square root of the process count
 int main(){
-    int *A=NULL,*B=NULL;    // NxN input matrices
-    int *C=NULL;            // NxN result matrix
+
+
     //----------------------------1-------------------------
     MPI_Init(NULL,NULL);
 
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     MPI_Comm_size(MPI_COMM_WORLD,&size);
-
-    if(!rank){
-        A=(int*)malloc(N*N*sizeof(int));
-        B=(int*)malloc(N*N*sizeof(int));
-        C=(int*)calloc(N*N,sizeof(int));
-    }
     
     int size_1=sqrt(size);
     if(!rank&&size_1*size_1!=size){
@@ -96,11 +93,10 @@ int main(){
     if(!rank){
         FILE* file=fopen("input","w");
         srand(time(NULL));
-        fprintf(file,"%d\n",N);
-        create_matrices(A,B);
-        print_matrix(A,N,file);
+        create_matrices();
+        print_matrix((int**)A,N,file);
         fprintf(file,"\n");
-        print_matrix(B,N,file);
+        print_matrix((int**)B,N,file);
         fclose(file);
     }
 
@@ -139,8 +135,8 @@ int main(){
 
 
             //int MPI_Send(const void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
-            MPI_Isend(&A[A_first_index*N+A_second_index],1,BLOCK,i,0,MPI_COMM_WORLD,REQ_A+i);   //tag 0 is for A
-            MPI_Isend(&B[B_first_index*N+B_second_index],1,BLOCK,i,1,MPI_COMM_WORLD,REQ_B+i);   //tag 1 is for B
+            MPI_Isend(&A[A_first_index][A_second_index],1,BLOCK,i,0,MPI_COMM_WORLD,REQ_A+i);   //tag 0 is for A
+            MPI_Isend(&B[B_first_index][B_second_index],1,BLOCK,i,1,MPI_COMM_WORLD,REQ_B+i);   //tag 1 is for B
         }
         //will only be used in process 0 but put here to make sure they dont get deallocated
     }
@@ -286,7 +282,7 @@ int main(){
             for(int k=0;k<block_size;k++){      //k is row from that process's C block
 
                 MPI_Status status;
-                MPI_Recv(C+(i/size_1*block_size+k)*N+(i%size_1)*block_size,
+                MPI_Recv(&C[i/size_1*block_size+k][(i%size_1)*block_size],
                             block_size,MPI_INT,i,
                             size_1*2+i*block_size+k,MPI_COMM_WORLD,&status);
             }
@@ -295,7 +291,7 @@ int main(){
         printf("Parallel time is %f seconds\n",MPI_Wtime()-TIMER);       //writing time
 
         FILE* file=fopen("output","w");
-        print_matrix(C,N,file);
+        print_matrix((int**)C,N,file);
         fclose(file);
     }
 

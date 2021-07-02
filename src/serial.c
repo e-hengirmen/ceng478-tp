@@ -5,27 +5,19 @@
 #define master 0
 
 int rank,size;
+int N;
 
-#define N 1250  //1250 max  
-int A[N][N];
-int B[N][N];    
-// NxN input matrices
-int C[N][N];            // NxN result matrix
-
-void create_matrices(int **a,int **b){
-    int (*A)[N]=(int(*)[N])a;
-    int (*B)[N]=(int(*)[N])b;
-
-    for(int i=0;i<N;i++)for(int k=0;k<N;k++)scanf("%d",&A[i][k]);
-    for(int i=0;i<N;i++)for(int k=0;k<N;k++)scanf("%d",&B[i][k]);
+void create_matrices(int *A,int *B){
+    int x=N*N;
+    for(int i=0;i<x;i++)scanf("%d",&A[i]);
+    for(int i=0;i<x;i++)scanf("%d",&B[i]);
 }
 
 
-void print_matrix(int **MAT,int n,FILE* file){
-    int (*arr)[n]=(int(*)[n])MAT;
+void print_matrix(int *arr,int n,FILE* file){
     for(int i=0;i<n;i++){
         for(int k=0;k<n;k++){
-            fprintf(file,"%d ",arr[i][k]);
+            fprintf(file,"%d ",arr[i*n+k]);
         }
         fprintf(file,"\n");
     }
@@ -36,26 +28,24 @@ void print_matrix(int **MAT,int n,FILE* file){
     //In this problem we will divide result matrix of C into P blocks and calculate each one of them in different processes
     //Since 
 int main(){
+    scanf("%d",&N);
+    int *A=(int*)malloc(N*N*sizeof(int)),
+        *B=(int*)malloc(N*N*sizeof(int)),         // NxN input matrices
+        *C=(int*)calloc(N*N,sizeof(int));         // NxN result matrix
 
     srand(time(NULL));
 
 
 
-    create_matrices((int**)A,(int**)B);
+    create_matrices(A,B);
 
-
-    // printf("INITIAL A\n");
-    // print_matrix((int**)A,N,M);
-    // printf("\nINITIAL B\n");
-    // print_matrix((int**)B,M,K);
 
     clock_t TIMER = clock();
 
     for(int n=0;n<N;n++){
         for(int k=0;k<N;k++){
-            C[n][k]=0;
             for(int m=0;m<N;m++){
-                C[n][k]+=A[n][m]*B[m][k];
+                C[n*N+k]+=A[n*N+m]*B[m*N+k];
             }
         }
     }
@@ -68,10 +58,14 @@ int main(){
     double TIME=(double)(clock()-TIMER)/CLOCKS_PER_SEC;
     printf("Sequential time is %f seconds\n",TIME);
 
+    free(A);
+    free(B);
 
     FILE *file=fopen("output2","w");
-    print_matrix((int**)C,N,file);
+    print_matrix(C,N,file);
     fclose(file);
+
+    free(C);
 
 
 }
