@@ -177,14 +177,15 @@ int main(){
     if(!rank){          //sending row and column groups from process 0 to others
 
 
-        
+        int a,b,A_first_index,A_second_index,B_first_index,B_second_index;
         for(int i=0;i<size;i++){        //sending row and column groups to every process
-            int a=i/size_1,b=i%size_1; 
-            int A_first_index=block_size*(a);
-            int A_second_index=block_size*((b+a+size_1)%size_1);
+            a=i/size_1;
+            b=i%size_1; 
+            A_first_index=block_size*(a);
+            A_second_index=block_size*((b+a+size_1)%size_1);
 
-            int B_first_index=block_size*((a+b+size_1)%size_1);
-            int B_second_index=block_size*(b);
+            B_first_index=block_size*((a+b+size_1)%size_1);
+            B_second_index=block_size*(b);
 
 
 
