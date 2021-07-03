@@ -63,7 +63,7 @@ fourth      --->    Sending Block back to process 0 for presentation
 
 
 
-//we are assuming only process 0 has access to the input matrices in this problem
+//we are assuming only process 0 has access to the input matrices in this cengproblem
     //using a square number of processes is neccessary (for example:4 9 16)
     //also dimensions of the matrix must be divisible to the square root of the process count
 int main(){
@@ -77,6 +77,18 @@ int main(){
     int size_1=sqrt(size);
     int block_size=N/size_1;     //dimensions of the block that we are gonna send 
 
+    MPI_Status ABStatus[2];
+
+    MPI_Datatype BLOCK;
+    
+    MPI_Request REQ_A[size],REQ_B[size];
+
+    MPI_Status recv_ST[2*size_1-2];
+    MPI_Request send_RQ[2*size_1-2];
+    MPI_Status statusWait[2*size_1-2];
+
+    MPI_Request req[block_size];
+
 
 
 
@@ -85,7 +97,7 @@ int main(){
         *BB_Block=(int*)malloc(block_size*block_size*sizeof(int)),
         *AA_Block1=(int*)malloc(block_size*block_size*sizeof(int)),
         *BB_Block1=(int*)malloc(block_size*block_size*sizeof(int)),
-        *CC_Block=(int*)calloc(block_size*block_size,sizeof(int));
+        *CC_Block=(int*)calloc(block_size*block_size,sizeof(int)); 
     if(AA_Block==NULL||BB_Block==NULL||CC_Block==NULL||AA_Block1==NULL||BB_Block1==NULL){
         printf("Your system could not allocate enough space\nAborted\n");
         MPI_Abort(MPI_COMM_WORLD,3);
@@ -99,15 +111,6 @@ int main(){
     int (*C_Block)[block_size]=(int(*)[block_size])CC_Block;
     int (*A_Block1)[block_size]=(int(*)[block_size])AA_Block1;
     int (*B_Block1)[block_size]=(int(*)[block_size])BB_Block1;
-
-
-
-    // int A_Block[block_size][block_size],B_Block[block_size][block_size],C_Block[block_size][block_size];
-    // //this are the blocks of size N/sqrt(p) x N/sqrt(p) 
-    //     //block A and B are blocks that will come from process 0 block C is the result matrix
-
-    // int A_Block1[block_size][block_size],B_Block1[block_size][block_size];
-    //these blocks will be mutually used to with A/B_Blocks enhance send receive operations .
     
 
 
@@ -128,6 +131,8 @@ int main(){
         A=(int*)malloc(N*N*sizeof(int));
         B=(int*)malloc(N*N*sizeof(int));
         C=(int*)malloc(N*N*sizeof(int));
+        MPI_Type_vector(block_size,block_size,N,MPI_INT,&BLOCK);    //Block type
+        MPI_Type_commit(&BLOCK);
     }
     
     if(!rank&&size_1*size_1!=size){
@@ -155,8 +160,7 @@ int main(){
     MPI_Barrier(MPI_COMM_WORLD);        //The algorithm will start here
         //In here we are just checking for requirements amd creating the initial A B matrices
     //------------------------------------------------------
-    double TIMER;
-    if(!rank)TIMER=MPI_Wtime();     //for checking how many seconds the program take
+
 
 
 
@@ -168,12 +172,8 @@ int main(){
     //--------------------------2---------------------------
 
     if(!rank){          //sending row and column groups from process 0 to others
-        MPI_Datatype BLOCK;
-        MPI_Type_vector(block_size,block_size,N,MPI_INT,&BLOCK);    //Block type
-        MPI_Type_commit(&BLOCK);
 
-        MPI_Request REQ_A[size],REQ_B[size];
-        MPI_Status stat_A[size],stat_B[size];
+
         
         for(int i=0;i<size;i++){        //sending row and column groups to every process
             int a=i/size_1,b=i%size_1; 
@@ -193,15 +193,17 @@ int main(){
     }
     //------------------------------------------------------
 
-
+    
 
 
 
 
     //------------------------first-------------------------
-    MPI_Status ABStatus[2];
     MPI_Recv(&A_Block[0][0],block_size*block_size,MPI_INT,0,0,MPI_COMM_WORLD,ABStatus);
     MPI_Recv(&B_Block[0][0],block_size*block_size,MPI_INT,0,1,MPI_COMM_WORLD,ABStatus+1);
+
+    double TIMER;
+    if(!rank)TIMER=MPI_Wtime();     //for checking how many seconds the program take
 
     for(int i=0;i<block_size;i++){
         for(int k=0;k<block_size;k++){
@@ -248,8 +250,8 @@ int main(){
     //tags 0 and 1
     
     for(int i=1;i<size_1;i++){      //since first operation is already done there are size_1-1 ops left
-        MPI_Status recv_ST[2];
-        MPI_Request send_RQ[2];
+        // MPI_Status recv_ST[2];
+        // MPI_Request send_RQ[2];
         //------------------------second-------------------------
         switch(which){
             case 0:             //initial
@@ -268,11 +270,11 @@ int main(){
         }
         which=!which;
 
-        MPI_Isend(&CURRENT_A[0][0],block_size*block_size,MPI_INT,next_partner_A,2*i,MPI_COMM_WORLD,send_RQ);        //A tags are even
-        MPI_Isend(&CURRENT_B[0][0],block_size*block_size,MPI_INT,next_partner_B,2*i+1,MPI_COMM_WORLD,send_RQ+1);      //B tags are odd
+        MPI_Isend(&CURRENT_A[0][0],block_size*block_size,MPI_INT,next_partner_A,2*i,MPI_COMM_WORLD,send_RQ+i*2-2);        //A tags are even
+        MPI_Isend(&CURRENT_B[0][0],block_size*block_size,MPI_INT,next_partner_B,2*i+1,MPI_COMM_WORLD,send_RQ+i*2-1);      //B tags are odd
 
-        MPI_Recv(&NEXT_A[0][0],block_size*block_size,MPI_INT,previous_partner_A,2*i,MPI_COMM_WORLD,recv_ST);
-        MPI_Recv(&NEXT_B[0][0],block_size*block_size,MPI_INT,previous_partner_B,2*i+1,MPI_COMM_WORLD,recv_ST+1);
+        MPI_Recv(&NEXT_A[0][0],block_size*block_size,MPI_INT,previous_partner_A,2*i,MPI_COMM_WORLD,recv_ST+i*2-2);
+        MPI_Recv(&NEXT_B[0][0],block_size*block_size,MPI_INT,previous_partner_B,2*i+1,MPI_COMM_WORLD,recv_ST+i*2-1);
 
         // printf("%d 222rank222 (%d %d %d %d %d %d %d %d)\n",rank,NEXT_A[0][0],NEXT_A[0][1],NEXT_A[1][0],NEXT_A[1][1],NEXT_B[0][0],NEXT_B[0][1],NEXT_B[1][0],NEXT_B[1][1]);
 
@@ -294,8 +296,8 @@ int main(){
             }
         }
         //------------------------------------------------------
-        MPI_Status statusWait[2];
-        MPI_Waitall(2,send_RQ,statusWait);
+        
+        MPI_Waitall(2,send_RQ+2*i-2,statusWait+2*i-2);
         // MPI_Waitall(1,send_RQ,statusWait);
 
     }
@@ -309,16 +311,15 @@ int main(){
 
 
     for(int i=0;i<block_size;i++){
-        MPI_Request req;
-        MPI_Isend(&C_Block[i][0],block_size,MPI_INT,0,TAG+i,MPI_COMM_WORLD,&req);
+        MPI_Isend(&C_Block[i][0],block_size,MPI_INT,0,TAG+i,MPI_COMM_WORLD,req+i);
     }
 
     //first exhaust that process
+    MPI_Status status;
     if(!rank){      //Receiving for process 0
         for(int i=0;i<size;i++){        //i is process
             for(int k=0;k<block_size;k++){      //k is row from that process's C block
 
-                MPI_Status status;
                 MPI_Recv(C+(i/size_1*block_size+k)*N+(i%size_1)*block_size,
                             block_size,MPI_INT,i,
                             size_1*2+i*block_size+k,MPI_COMM_WORLD,&status);
@@ -354,9 +355,9 @@ int main(){
         free(C);
     free(AA_Block);
     free(BB_Block);
-    free(CC_Block);
     free(AA_Block1);
     free(BB_Block1);
+    // free(CC_Block);
 
 
     MPI_Finalize();

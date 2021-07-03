@@ -1,6 +1,7 @@
 mpicc solution.c -o parallel -lm
 gcc serial.c -o sequential -lm
-mpirun -np 4 ./parallel
+echo "Compiled"
+mpirun -np 9 ./parallel
 ./sequential <input
 # echo "diff is executed for outputs of parallel and sequential algorithms below"
 # echo "if you see any differences it means that one of the algoritms are wrong"
