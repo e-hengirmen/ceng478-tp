@@ -83,11 +83,14 @@ int main(){
     
     MPI_Request REQ_A[size],REQ_B[size];
 
-    MPI_Status recv_ST[2*size_1-2];
-    MPI_Request send_RQ[2*size_1-2];
-    MPI_Status statusWait[2*size_1-2];
+    MPI_Status recv_ST[2];
+    MPI_Request send_RQ[2];
+    // MPI_Status statusWait[2*size_1-2];
+    MPI_Status statusWait[2];
 
     MPI_Request req[block_size];
+
+    MPI_Status status;
 
 
 
@@ -270,11 +273,11 @@ int main(){
         }
         which=!which;
 
-        MPI_Isend(&CURRENT_A[0][0],block_size*block_size,MPI_INT,next_partner_A,2*i,MPI_COMM_WORLD,send_RQ+i*2-2);        //A tags are even
-        MPI_Isend(&CURRENT_B[0][0],block_size*block_size,MPI_INT,next_partner_B,2*i+1,MPI_COMM_WORLD,send_RQ+i*2-1);      //B tags are odd
+        MPI_Isend(&CURRENT_A[0][0],block_size*block_size,MPI_INT,next_partner_A,2*i,MPI_COMM_WORLD,send_RQ);        //A tags are even
+        MPI_Isend(&CURRENT_B[0][0],block_size*block_size,MPI_INT,next_partner_B,2*i+1,MPI_COMM_WORLD,send_RQ+1);      //B tags are odd
 
-        MPI_Recv(&NEXT_A[0][0],block_size*block_size,MPI_INT,previous_partner_A,2*i,MPI_COMM_WORLD,recv_ST+i*2-2);
-        MPI_Recv(&NEXT_B[0][0],block_size*block_size,MPI_INT,previous_partner_B,2*i+1,MPI_COMM_WORLD,recv_ST+i*2-1);
+        MPI_Recv(&NEXT_A[0][0],block_size*block_size,MPI_INT,previous_partner_A,2*i,MPI_COMM_WORLD,recv_ST);
+        MPI_Recv(&NEXT_B[0][0],block_size*block_size,MPI_INT,previous_partner_B,2*i+1,MPI_COMM_WORLD,recv_ST+1);
 
         // printf("%d 222rank222 (%d %d %d %d %d %d %d %d)\n",rank,NEXT_A[0][0],NEXT_A[0][1],NEXT_A[1][0],NEXT_A[1][1],NEXT_B[0][0],NEXT_B[0][1],NEXT_B[1][0],NEXT_B[1][1]);
 
@@ -297,7 +300,7 @@ int main(){
         }
         //------------------------------------------------------
         
-        MPI_Waitall(2,send_RQ+2*i-2,statusWait+2*i-2);
+        MPI_Waitall(2,send_RQ,statusWait);
         // MPI_Waitall(1,send_RQ,statusWait);
 
     }
@@ -315,7 +318,6 @@ int main(){
     }
 
     //first exhaust that process
-    MPI_Status status;
     if(!rank){      //Receiving for process 0
         for(int i=0;i<size;i++){        //i is process
             for(int k=0;k<block_size;k++){      //k is row from that process's C block
