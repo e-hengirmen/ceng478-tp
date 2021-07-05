@@ -1,32 +1,172 @@
-I have used mpi libraries inc to check efficiency in my local system with maximum N being 1250 with p being 4\\
+I have used mpi libraries to check efficiency with maximum N being 1200,2400,4800 with process count changing between 4,9,16 and 25.\\
 \\
-While the program is faster then the sequential by 2 times(with 4 processes) it has not reached the expected efficiency of 4 times efficiency.\\
+While the parallel version was faster then the sequential it has not reached the expected efficiency of P times speedup.\\
 \\
-my last 10 calculations with matrices of size 1250 and process count 4 are:
+Below are the calculations with different matrix sizes and number of processors.
 \begin{center}
 	\begin{tabular}{ |c|c|c|c| } 
 		\hline
-		calculation & Parallel time & Sequential time \\ \hline
-		1 & 5.188443 & 10.520247 \\ 
-		2 & 5.205665 & 10.476868 \\ 
-		3 & 5.205504 & 11.147428 \\ 
-		4 & 5.082834 & 11.127606 \\ 
-		5 & 5.141081 & 10.719176 \\ 
-		6 & 5.029180 & 10.508834 \\ 
-		7 & 5.132676 & 10.439199 \\ 
-		8 & 5.113407 & 10.424923 \\ 
-		9 & 5.040144 & 11.151711 \\ 
-		10 & 5.079504 & 10.848710 \\ 
+		calculation(process=4,size=1200$\times$1200) & Parallel time & Sequential time & speedup \\ \hline
+		1 & 23.116102 & 36.413473 & 1.575243 \\ 
+		2 & 23.155564 & 36.350138 & 1.569823 \\ 
+		3 & 23.083859 & 36.355981 & 1.574952 \\ 
+		4 & 23.143224 & 36.860351 & 1.592705 \\ 
+		5 & 23.124652 & 36.881687 & 1.594907 \\ 
+		mean speedup  & & & 1.581526 \\
 		\hline
 	\end{tabular}
+	
 \end{center}
-But according to my calculations I was thinking that there was a problem with my system. $\frac{parallel}{sequential}$ (assuming t$_s$ and t$_m$ are little numbers (1)) for N=1250 and p=4. I was thinking of the theoritical model of using scatter/gather in my calculations which led me to believe that I should have been getting 4 times faster for the parallel algorithm(since both of their gamma time complexities were same).
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c| } 
+		\hline
+		calculation(process=9,size=1200$\times$1200) & Parallel time & Sequential time &Speedup\\ \hline
+		1 & 14.723486 & 37.130589 &2.521861\\ 
+		2 & 13.604734 & 36.407562 &2.676095\\ 
+		3 & 14.824080 & 36.372106 &2.453582\\ 
+		4 & 14.044482 & 36.405685 &2.592170\\ 
+		5 & 14.767953 & 36.410339 &2.465496\\ 
+		mean speedup  & & & 2.541841\\
+		\hline
+	\end{tabular}
+	
+\end{center}
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c| } 
+		\hline
+		calculation(process=16,size=1200$\times$1200) & Parallel time & Sequential time &Speedup\\ \hline
+		1 & 14.302692 & 37.062425 &2.591290\\ 
+		2 & 15.699542 & 36.390916 &2.317960\\ 
+		3 & 14.494124 & 36.373989 &2.509567\\ 
+		4 & 14.112281 & 36.328825 &2.574270\\ 
+		5 & 14.106683 & 36.403323 &2.580572\\ 
+		mean speedup  & & & 2.514732\\
+		
+		\hline
+	\end{tabular}
+	
+\end{center}
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c| } 
+		\hline
+		calculation(process=25,size=1200$\times$1200) & Parallel time & Sequential time &Speedup\\ \hline
+		1 & 12.045814 & 37.014805 &3.072835\\ 
+		2 & 11.861033 & 36.401433 &3.068993\\ 
+		3 & 11.591858 & 36.319211 &3.133165\\ 
+		4 & 11.933886 & 37.024892 &3.102500\\ 
+		5 & 12.255832 & 36.404675 &2.970396\\ 
+		mean speedup  & & & 3.069578\\
+		\hline
+	\end{tabular}
+	
+\end{center}
+
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c| } 
+		\hline
+		calculation(process=4,size=2400$\times$2400) & Parallel time & Sequential time &Speedup\\ \hline
+		1 & 192.699241 & 318.211109&1.651335 \\ 
+		2 & 184.211859 & 322.091272&1.748482 \\ 
+		3 & 183.900926 & 321.474902&1.748087\\ 
+		4 & 181.326152 & 324.037898&1.787044\\ 
+		5 & 183.490697 & 321.113274&1.750024\\
+		mean speedup  & & & 1.736995\\ 
+		
+		\hline
+	\end{tabular}
+	
+\end{center}
+
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c| } 
+		\hline
+		calculation(process=9,size=2400$\times$2400) & Parallel time & Sequential time &Speedup\\ \hline
+		1 & 114.463123 & 319.798532 & 2.793900\\ 
+		2 & 134.886585 & 321.363734 &2.382473\\ 
+		3 & 125.484979 & 331.610642 &2.642632\\ 
+		4 & 129.826397 & 332.186361 &2.558696\\ 
+		5 & 131.554516 & 319.788523 &2.430844\\ 
+		mean speedup  & & & 2.561709\\ 
+		\hline
+	\end{tabular}
+	
+\end{center}
+
+
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c| } 
+		\hline
+		calculation(process=16,size=2400$\times$2400) & Parallel time & Sequential time &Speedup\\ \hline
+		1 & 125.227370 & 319.848924 &2.554145\\ 
+		2 & 127.693532 & 319.822852 &2.504612\\ 
+		3 & 130.524845 & 320.510458 &2.455551\\ 
+		4 & 123.627115 & 320.358177 &2.591326\\ 
+		5 & 122.936653 & 331.839329 &2.699270\\ 
+		mean speedup  & & & 2.560981\\ 
+		\hline
+	\end{tabular}
+	
+\end{center}
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c| } 
+		\hline
+		calculation(process=25,size=2400$\times$2400) & Parallel time & Sequential time &Speedup\\ \hline
+		1 & 116.102483 & 332.032042 &2.859818\\ 
+		2 & 116.985520 & 319.799840 &2.733670\\ 
+		3 & 115.738467 & 331.603987 &2.865114\\ 
+		4 & 113.796615 & 320.154603 &2.813393\\ 
+		5 & 112.264850 & 319.957491 &2.850023\\ 
+		mean speedup  & & & 2.824404\\ 
+		\hline
+	\end{tabular}
+	
+\end{center}
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c| } 
+		\hline
+		process count(size=4800$\times$4800) & Parallel time & Sequential time & Speedup\\ \hline
+		4 & 1410.640666 & 3642.143507 & 2.581907 \\ 
+		9 & 952.684290 & 3649.187653 &  3.830427\\ 
+		16 & 1070.134237 & 3680.21908 & 3.439025 \\ 
+		25 & 880.903901 & 3682.348018 & 4.180192
+		 \\ 
+		
+		\hline
+	\end{tabular}
+	
+\end{center}
+
+\includegraphics[scale=0.25]{aaaa} \\
+
+The network I was using was the halley network which has 32 nodes. Because of its node count being $2^5$ I assume that it's topology is 5d-hypercube. It's network topology might be the reason why the parallel version was running better for 9 processors intead of 16 processors (unlike how it should be according to Amdhal's law). But in general increasing number of processors increased speedup of the program(The increase of speedups after changing the number of processors was always a lot less then the expected increase).\\
+\\
+\textbf{Note:} Even if the algorithm was working as fast as the expected speedups we would never reach the speed of amdhal's law because to after some point the communication overhead would actually decrease the efficiency of the algorithm.\\
+\\
+According to Gustaffson's law speedup should approach to ideal speedup with the increase of workload. But this wasn't the case between 1200$\times$1200 and 2400$\times$2400 input cases even though the workload has increased by 4 times. The speedup increased when we increased input matrices to be of size 4800$\times$4800. But the reason for the speedups to not change between 1200$\times$1200 and 2400$\times$2400 inputs still remains a mystery.\\
+\\
+Speedup did not meet the calculated expections. (assuming t$_s$ and t$_m$ are little numbers (1)) for N=1200 and p=4. I was thinking of the theoritical model of using scatter/gather in my calculations which led me to believe that I should have been getting 4 times faster for the parallel algorithm(since both of their gamma time complexities were same).
 \[
 \frac{\frac{2N^3-N^2}{p}+3log_2(p)+2\sqrt{p}-1+\frac{N^2}{p}(3p+2\sqrt{p}-4)}{2N^3-N^2}=
 \]
-\[\frac{81738282}{325390625}=0.251200482496998\]
-Even when I changed my calculations to the model I have implemented there wasn't a big difference in the calculations for N 1250 and p being 4 it should have been 4 times more efficient yet it remained being only 2 times efficient. 
+\[\frac{96440001}{383840000}=0.25125052365 \text{ for p=4 N=1200}
+\]
+\[=0.1124542 \text{ for p=9 N=1200}\]
+\[=0.0638547 \text{ for p=16 N=1200}\]
+\[=0.0413505 \text{ for p=25 N=1200}\]
+Even when I changed my calculations to the model I have implemented there wasn't a big difference in the calculations for N 1200 and p being 4 it should have been 4 times more efficient yet it was only 1.6 times efficient.(the speedup increased to 2.5 times when we increased the matrix dimensions to be 4800 which support Gustaffson's law) 
 \[
 \frac{\frac{2N^3-N^2}{P}+(3p+2\sqrt{p}-2)(t_s+\frac{N^2}{p}t_m)}{2N^3-N^2}=
 \]
-\[\frac{981640639}{1951562500}=0.25140056380952\]
+\[\frac{434340007}{1727280000}=0.2514589 \text{ for p=4 N=1200}
+\]
+\[=0.1125469\text{ for p=9 N=1200}\]
+\[=0.0639068\text{ for p=16 N=1200}\]
+\[=0.0413839\text{ for p=25 N=1200}\]

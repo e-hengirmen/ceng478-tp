@@ -8,7 +8,7 @@
 
 int rank,size;
 
-#define N 1200  //1250 max
+#define N 1200
 
 
 
