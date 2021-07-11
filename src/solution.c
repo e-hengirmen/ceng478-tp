@@ -43,7 +43,7 @@ Note: In this implementation we are assuming that only process
     0 has access to initial A B matrices
 1-Initialization and checks
 2-Sending matrix blocks from process 0 to every other process
-3-Initializing values of C block to 0 on every process
+3-Initializing values of C block to 0 on every process (This is now done early in the code with calloc)
 ---------------------------PART 2-PARALLEL-----------------------------
 first       --->    Block receival from process 0 and partial block calculation
     second* --->    Sending new A and B blocks from previous_partner process and 
